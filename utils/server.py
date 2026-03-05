@@ -31,7 +31,7 @@ class Server:
 
     def stop(self):
         """
-            Stops the server and closes all client connections.
+        Stops the server and closes all client connections.
         :return:
         """
         self._running = False
@@ -41,6 +41,11 @@ class Server:
         self._sock.close()
 
     def handle_client(self, client: socket.socket):
+        """
+        Per client management thread. Processes messages from the client and acts accordingly.
+        :param client:
+        :return:
+        """
         while self._running:
             message = client.recv(1024)
             if not message:
