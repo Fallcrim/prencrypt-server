@@ -3,6 +3,8 @@ import sqlite3
 import uuid
 from typing import Any, List
 
+from .cryptography import validate_public_key
+
 
 class Database:
     def __init__(self, db_name: str):
@@ -46,6 +48,12 @@ class Database:
         :param public_key:
         :return:
         """
+        # Check if the public key is valid (e.g., correct length for RSA keys)
+        if len(public_key) != 32:
+            return False
+        if not validate_public_key(public_key):
+            return False
+
         # Check if the public key already exists in the database
         pubkey_fingerprint = hashlib.sha256(public_key).hexdigest()
         q = "SELECT * FROM user_public_keys WHERE fingerprint = ?"

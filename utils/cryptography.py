@@ -31,3 +31,16 @@ def generate_signature(data: bytes, pubkey: bytes) -> bytes:
     verifier = pss.new(RSA.import_key(pubkey))
     signature = verifier.sign(data_hash)
     return signature
+
+
+def validate_public_key(public_key: bytes) -> bool:
+    """
+    Validates an RSA public key
+    :param public_key:
+    :return:
+    """
+    try:
+        RSA.import_key(public_key)
+        return True
+    except (ValueError, IndexError):
+        return False
