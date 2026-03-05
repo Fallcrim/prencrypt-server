@@ -1,3 +1,6 @@
+from . import convert_userid
+
+
 class Message:
     OPCODES = {
         0x00: "UKN",  # docs: unknown
@@ -36,4 +39,4 @@ class Message:
         userid_b = message[Message.USERID_OFFSET:Message.USERID_OFFSET + 4]  # userid length = 4
         signature_b = message[Message.SIGNATURE_OFFSET:Message.SIGNATURE_OFFSET + 256]  # signature length = 256
         data = message[Message.DATA_OFFSET:]
-        return Message(hex(opcode_b), int(userid_b), signature_b, data)
+        return Message(hex(opcode_b), convert_userid(userid_b), signature_b, data)
