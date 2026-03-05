@@ -21,7 +21,8 @@ class Message:
         self.signature = signature
         self.data = data
 
-    def to_bytes(self) -> bytes:
+    @property
+    def as_bytes(self) -> bytes:
         """
         Returns a bytes representation of the message
         :return:
