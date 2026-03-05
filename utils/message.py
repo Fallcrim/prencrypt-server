@@ -1,4 +1,4 @@
-from . import convert_userid
+import uuid
 
 
 class Message:
@@ -36,12 +36,19 @@ class Message:
         :param message:
         :return:
         """
-        opcode_b = message[cls.OPCODE_OFFSET]
-        userid_b = message[cls.USERID_OFFSET:cls.USERID_OFFSET + 4]  # userid length = 4
+        if len(message) != 512:  # standard message length is 512 bytes -> opcode(1) + userid(16) + signature(256) + data(239)
+            raise ValueError("Invalid message length")
+        opcode = message[cls.OPCODE_OFFSET]
+        userid_b = message[cls.USERID_OFFSET:cls.USERID_OFFSET + 16]  # userid length = 4
         signature_b = message[cls.SIGNATURE_OFFSET:cls.SIGNATURE_OFFSET + 256]  # signature length = 256
         data = message[cls.DATA_OFFSET:]
-        return Message(hex(opcode_b), cls.convert_userid(userid_b), signature_b, data)
+        return Message(hex(opcode), cls._convert_userid(userid_b), signature_b, data)
 
     @staticmethod
-    def convert_userid(userid: bytes) -> int:
-        return int.from_bytes(userid, byteorder='little', signed=False)
+    def _convert_userid(userid: bytes) -> uuid.UUID:
+        """
+        Converts a bytes representation of a userid to a UUID object.
+        :param userid:
+        :return:
+        """
+        return uuid.UUID(bytes=userid)
