@@ -1,22 +1,28 @@
 import hashlib
+import logging
 import sqlite3
 import uuid
 from typing import Any, List
 
 from .cryptography import validate_public_key
+from .errors import *
 
 
 class Database:
     def __init__(self, db_name: str):
         self.db_name = db_name
         self.connection = None
+        self.logger = None
 
     def connect(self) -> None:
         """
         Establishes a connection to the SQLite database specified by db_name.
         :return:
         """
+        self.logger = logging.getLogger("prencrypt-database")
+        self.logger.setLevel(logging.DEBUG)
         self.connection = sqlite3.connect(self.db_name)
+        self.logger.debug(f"Connected to database {self.db_name}")
 
     def disconnect(self) -> None:
         """
@@ -26,6 +32,7 @@ class Database:
         if self.connection:
             self.connection.close()
             self.connection = None
+            self.logger.debug(f"Disconnected from database {self.db_name}")
 
     def initialize_database(self) -> None:
         """
@@ -33,13 +40,14 @@ class Database:
         :return:
         """
         if not self.connection:
-            raise Exception("Database connection is not established.")
+            raise DatabaseError("Database connection is not established.")
 
         cursor = self.connection.cursor()
         with open('schema.sql', 'r') as f:
             schema = f.read()
         cursor.executescript(schema)
         self.connection.commit()
+        self.logger.debug(f"Initialized database {self.db_name}")
 
     def register_new_user(self, public_key: bytes) -> bool:
         """
@@ -50,16 +58,16 @@ class Database:
         """
         # Check if the public key is valid (e.g., correct length for RSA keys)
         if len(public_key) != 32:
-            return False
+            raise InvalidPublicKeyError("Public key must be 32 bytes long.")
         if not validate_public_key(public_key):
-            return False
+            raise InvalidPublicKeyError("Invalid public key format.")
 
         # Check if the public key already exists in the database
         pubkey_fingerprint = hashlib.sha256(public_key).hexdigest()
         q = "SELECT * FROM user_public_keys WHERE fingerprint = ?"
         result = self._execute_query(q, (pubkey_fingerprint,))
         if result:
-            return False
+            raise UserAlreadyExistsError(pubkey_fingerprint)
 
         # Insert the new user into the database
         q_users = "INSERT INTO users (user_id) VALUES (?)"
