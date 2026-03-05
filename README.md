@@ -1,3 +1,5 @@
+⚠ This project is still in early development and thus does not have any completed features yet. The README will be updated as the project progresses.
+
 # Prencrypt
 Prencrypt is an encryption tool which allows you to manually encrypt and decrypt messages. The public keys of all users
 are stored on a central server for distribution. Private keys on the other hand are stored locally on the user's device.
