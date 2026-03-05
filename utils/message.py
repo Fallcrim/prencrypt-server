@@ -12,10 +12,10 @@ class Message:
 
     OPCODE_OFFSET = 0
     USERID_OFFSET = 1
-    SIGNATURE_OFFSET = 4
-    DATA_OFFSET = 261
+    SIGNATURE_OFFSET = 17
+    DATA_OFFSET = 273
 
-    def __init__(self, opcode: str, userid: int, signature: bytes, data: bytes) -> None:
+    def __init__(self, opcode: str, userid: uuid.UUID, signature: bytes, data: bytes) -> None:
         self.opcode = opcode
         self.userid = userid
         self.signature = signature
@@ -25,9 +25,12 @@ class Message:
     def as_bytes(self) -> bytes:
         """
         Returns a bytes representation of the message
-        :return:
         """
-        return f"{self.opcode}{self.userid}{self.signature}{self.data}".encode()
+        opcode_b = int(self.opcode, 16).to_bytes(1, byteorder='big')
+        userid_b = self.userid.bytes  # convert UUID to hex string and then to bytes
+        signature_b = self.signature.ljust(256, b'\0')  # pad signature to 256 bytes
+        data_b = self.data.ljust(239, b'\0')  # pad data to 239 bytes
+        return opcode_b + userid_b + signature_b + data_b
 
     @classmethod
     def parse_message(cls, message: bytes) -> 'Message':
