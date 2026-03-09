@@ -67,7 +67,7 @@ class Server:
                 # register new user
                 error = ""
                 try:
-                    success = self.database.register_new_user(parsed_message.data)
+                    self.database.register_new_user(parsed_message.data)
                 except SQLiteError as e:
                     self.logger.error(e.sqlite_errorname)
                     error = "Internal server error"
@@ -78,7 +78,7 @@ class Server:
                     self.logger.error(f"Failed to register user with invalid public key: {str(e)}")
                     error = "Invalid public key"
 
-                if not success:
+                if error:
                     error_message = Message("0xFF", parsed_message.userid, b'', error.encode()).as_bytes
                     client.send(error_message)
             else:
